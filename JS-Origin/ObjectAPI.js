@@ -5,7 +5,7 @@
  * @param {...any} args
  * @return {Object} new obj 
  */
-function newInstance(Fn, ...args){
+function newInstance(Fn, ...args) {
     //1.创建新对象
     const obj = {};
     //2.给obj绑定一个Fn函数，让Fn的this指向obj
@@ -23,12 +23,12 @@ function newInstance(Fn, ...args){
  * @param {Function} Fn type
  * @return {Boolean} boolean
  */
-function myInstanceof(obj, Fn){
+function myInstanceof(obj, Fn) {
     let prototype = Fn.prototype;
     let proto = obj.__proto__;
     //遍历原型链 一直到null
-    while(proto){
-        if(prototype === proto){
+    while (proto) {
+        if (prototype === proto) {
             return true;
         }
         //向原型链上面查找
@@ -43,14 +43,14 @@ function myInstanceof(obj, Fn){
  * @param {*} args
  * @return {*} 
  */
-function mergeObject(...args){
+function mergeObject(...args) {
     const result = {};
-    args.forEach(arg =>{
+    args.forEach(arg => {
         Object.keys(obj).forEach(key => {
             //如果result已经存在key属性 就合并
-            if(result.hasOwnProperty(key)){
+            if (result.hasOwnProperty(key)) {
                 result[key] = [].concat(result[key], obj[key])
-            }else{
+            } else {
                 //没有key属性 就添加key并赋值
                 result[key] = obj[key];
             }
@@ -65,12 +65,12 @@ function mergeObject(...args){
  * @param {*} target
  * @return {*} [...target] {...target} target
  */
-function clone_ES6(target){
-    if(target instanceof Array){
+function clone_ES6(target) {
+    if (target instanceof Array) {
         return [...target];
-    }else if(target instanceof Object){
-        return {...target};
-    }else{
+    } else if (target instanceof Object) {
+        return {...target };
+    } else {
         return target;
     }
 }
@@ -83,11 +83,11 @@ function clone_ES6(target){
  * @param {*} target
  * @return {*} 
  */
-function clone_ES5(target){
-    if(target != null && typeof target === 'object'){
+function clone_ES5(target) {
+    if (target != null && typeof target === 'object') {
         const cloneTarget = Array.isArray(target) ? [] : {};
-        for(let key in target){
-            if(target.hasOwnProperty){
+        for (let key in target) {
+            if (target.hasOwnProperty(key)) {
                 cloneTarget[key] = target[key];
             }
         }
@@ -103,28 +103,68 @@ function clone_ES5(target){
  * @param {*} data
  * @return {*} real type
  */
-function getType(data){
+function getType(data) {
     return Object.prototype.toString.call(data).slice(8, -1);
 }
 
 /**
  *深拷贝JSON版本
  * 对象字符串化：JSON.stringify(target)
- * 对象重组：JSON.parse
+ * 对象解析重组：JSON.parse
  * @param {*} target
  * @return {*} 
  */
-function deepClone_JSON(target){
+export function deepClone_JSON(target) {
     return JSON.parse(JSON.stringify(target));
 }
 
 /**浅拷贝ES5也算最基础的深拷贝 */
 let deepClone_ES5 = clone_ES5;
 
-function deepClone_Loop(target, map = new Map()){
-    const type = getType(target);
-    if(type === 'object' || type === 'array'){
-        let cloneTarget = map.get(target);
-        //如果递归的时候发现map
+export function deepClone_Loop(target, map = new Map()) {
+    const type = getType(target)
+    if (type === 'Object' || type === 'Array') {
+        let cloneTarget = map.get(target)
+        if (cloneTarget) {
+            return cloneTarget
+        }
+        cloneTarget = type === 'Array' ? [] : {}
+        map.set(target, cloneTarget)
+        for (const key in target) {
+            if (target.hasOwnProperty(key)) {
+                cloneTarget[key] = deepClone_Loop(target[key], map)
+            }
+        }
+        return cloneTarget
+    } else {
+        return target
+    }
+}
+
+export function deepClone_Plus(target, map = new Map()) {
+    const type = getType(target)
+    if (type === 'Object' || type === 'Array') {
+        let cloneTarget = map.get(target)
+        if (cloneTarget) {
+            return cloneTarget
+        }
+
+        if (type === 'Array') {
+            cloneTarget = []
+            map.set(target, cloneTarget)
+            target.forEach((item, index) => {
+                cloneTarget[index] = deepClone4(item, map)
+            })
+        } else {
+            cloneTarget = {}
+            map.set(target, cloneTarget)
+            Object.keys(target).forEach(key => {
+                cloneTarget[key] = deepClone4(target[key], map)
+            })
+        }
+
+        return cloneTarget
+    } else {
+        return target
     }
 }
